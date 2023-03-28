@@ -1,0 +1,26 @@
+
+FROM node:12.15.0-alpine
+# FROM node:16-bullseye-slim
+
+# Installing libvips-dev for sharp Compatibility
+RUN apk update && apk add --no-cache build-base gcc autoconf automake zlib-dev libpng-dev nasm bash vips-dev
+ARG NODE_ENV=development
+ENV NODE_ENV=${NODE_ENV}
+WORKDIR /opt/
+COPY ./package.json ./yarn.lock ./
+ENV PATH /opt/node_modules/.bin:$PATH
+ENV DATABASE_CLIENT	postgres
+ENV DATABASE_HOST 127.0.0.1
+ENV DATABASE_PORT 5432
+ENV DATABASE_NAME strapi-demo
+ENV DATABASE_USERNAME postgres
+ENV DATABASE_PASSWORD postgres
+ENV JWT_SECRET 7LcOgffL7EuwokSsCrPc5g==
+ENV ADMIN_JWT_SECRET ZPmmHu3rNagF4Uug00lLWQ==
+ENV APP_KEYS EnyhZfIGwKb/GVTBd7/QuA==,nr7HWchJXXuROC88MIS5AQ==,8Y722aqtVEgYBzxAkCDyWA==,2l2EH+heg1W47w0mDkSPMw==
+RUN yarn config set network-timeout 600000 -g && yarn install
+WORKDIR /opt/app
+COPY ./ .
+RUN yarn build
+EXPOSE 1337
+CMD ["yarn", "develop"]

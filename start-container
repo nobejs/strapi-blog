@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+echo "$BASE_URL"
+
+# http://localhost:1456/strapi
+# http:\/\/localhost:1456\/strapi
+
+# grep -rli '"http://api.domain/strapi"' build | xargs -i@ sed -i 's/"http:\/\/api.domain\/strapi"/"${BASE_URL}"/g' @
+#grep -rli '"http://api.domain/strapi"' build | xargs -i@ sed -i 's/"http:\/\/api.domain\/strapi"/"$BASE_URL"/g' @
+
+SRC='http://api.domain/strapi';
+find build -type f -name "*.js" -exec sed -i 's,'"$SRC"','"$BASE_URL"',' {} \;
+
+if [ $# -gt 0 ]; then
+    exec "$@"
+else
+    /usr/bin/supervisord
+fi

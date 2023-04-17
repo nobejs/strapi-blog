@@ -35,9 +35,9 @@ async function setPublicPermissions(newPermissions) {
 
   // Create the new permissions and link them to the public role
   const allPermissionsToCreate = [];
-  Object.keys(newPermissions).map(controller => {
+  Object.keys(newPermissions).map((controller) => {
     const actions = newPermissions[controller];
-    const permissionsToCreate = actions.map(action => {
+    const permissionsToCreate = actions.map((action) => {
       return strapi.query("plugin::users-permissions.permission").create({
         data: {
           action: `api::${controller}.${controller}.${action}`,
@@ -78,7 +78,7 @@ async function createEntry({ model, entry, files }) {
     if (files) {
       for (const [key, file] of Object.entries(files)) {
         // Get file name without the extension
-        const [fileName] = file.name.split('.');
+        const [fileName] = file.name.split(".");
         // Upload each individual file
         const uploadedFile = await strapi
           .plugin("upload")
@@ -200,4 +200,26 @@ module.exports = async () => {
       console.error(error);
     }
   }
+  strapi.db.lifecycles.subscribe({
+    models: ["admin::user"],
+    async afterCreate({ result }) {
+      const { registrationToken, email, firstname } = result;
+      if (!registrationToken) return;
+      try {
+        await strapi.plugins["email"].services.email.send({
+          to: email,
+          from: process.env.SES_DEFAULT_EMAIL,
+          replyTo: process.env.SES_DEFAULT_EMAIL,
+          subject: "Invitation to Blogs Dashboard.",
+          html: `<p>Hello ${firstname}!</p>
+            <p>You have been invited to blogs dashboard. To complete the signup process, Please click on the link below.</p>
+            <p>${process.env.BASE_URL}/admin/auth/register?registrationToken=${registrationToken}</p>
+            <p>Thanks.</p>
+          `,
+        });
+      } catch (err) {
+        console.log(err);
+      }
+    },
+  });
 };

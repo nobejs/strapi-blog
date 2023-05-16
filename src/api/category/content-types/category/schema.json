@@ -30,13 +30,12 @@
       "mappedBy": "category"
     },
     "categoryIcon": {
-      "allowedTypes": [
-        "images"
-      ],
       "type": "media",
       "multiple": false,
-      "required": true,
-      "private": true
+      "required": false,
+      "allowedTypes": [
+        "images"
+      ]
     }
   }
 }

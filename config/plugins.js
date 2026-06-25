@@ -3,12 +3,16 @@ module.exports = ({ env }) => ({
     config: {
       provider: "aws-s3",
       providerOptions: {
-        accessKeyId: env("AWS_ACCESS_KEY_ID"),
-        secretAccessKey: env("AWS_SECRET_ACCESS_KEY"),
-        region: env("AWS_REGION"),
-        params: {
-          Bucket: env("AWS_BUCKET_NAME"),
-        },
+        s3Options: {
+          credentials: {
+            accessKeyId: env('AWS_ACCESS_KEY_ID'),
+            secretAccessKey: env('AWS_SECRET_ACCESS_KEY'),
+          },
+          region: env('AWS_REGION'),
+          params: {
+            Bucket: env('AWS_BUCKET_NAME'),
+          },
+        }
       },
       actionOptions: {
         upload: {},
@@ -22,9 +26,11 @@ module.exports = ({ env }) => ({
     config: {
       provider: "amazon-ses",
       providerOptions: {
-        key: env("AWS_SES_KEY"),
-        secret: env("AWS_SES_SECRET"),
-        amazon: env("AWS_SES_END_POINT"),
+        region: env('AWS_SES_REGION'),
+        credentials: {
+          accessKeyId: env('AWS_SES_KEY'),
+          secretAccessKey: env('AWS_SES_SECRET'),
+        },
       },
       settings: {
         defaultFrom: env("SES_DEFAULT_EMAIL"),

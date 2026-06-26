@@ -100,3 +100,9 @@ grep -rli '"http://api.domain/strapi"' build | xargs -i@ sed -i 's/"http:\/\/api
 ```
 sed -i 's/"http://api.domain/strapi"/"${BASE_URL}"/g'
 ```
+
+## Migration From v4 to v5
+
+- https://docs.strapi.io/cms/migration/v4-to-v5/breaking-changes/new-response-format#migration
+- https://docs.strapi.io/cms/api/rest/populate-select#combining-population-with-other-operators
+- https://docs.strapi.io/tags/breaking-changes

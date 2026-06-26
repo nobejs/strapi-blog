@@ -3,7 +3,6 @@
 const fs = require("fs");
 const path = require("path");
 const mime = require("mime-types");
-const set = require("lodash.set");
 const {
   categories,
   homepage,
@@ -57,7 +56,7 @@ function getFileSizeInBytes(filePath) {
 }
 
 function getFileData(fileName) {
-  const filePath = `./data/uploads/${fileName}`;
+  const filePath = path.join(__dirname, "..", "data", "uploads", fileName);
 
   // Parse the file metadata
   const size = getFileSizeInBytes(filePath);
@@ -65,11 +64,21 @@ function getFileData(fileName) {
   const mimeType = mime.lookup(ext);
 
   return {
-    path: filePath,
-    name: fileName,
+    filepath: filePath,
+    originalFilename: fileName,
     size,
-    type: mimeType,
+    mimetype: mimeType,
   };
+}
+
+function setByPath(obj, path, value) {
+  const keys = path.split(".");
+  let current = obj;
+  for (let i = 0; i < keys.length - 1; i++) {
+    if (current[keys[i]] == null) current[keys[i]] = {};
+    current = current[keys[i]];
+  }
+  current[keys[keys.length - 1]] = value;
 }
 
 // Create an entry and attach files if there are any
@@ -78,7 +87,7 @@ async function createEntry({ model, entry, files }) {
     if (files) {
       for (const [key, file] of Object.entries(files)) {
         // Get file name without the extension
-        const [fileName] = file.name.split(".");
+        const [fileName] = file.originalFilename.split(".");
         // Upload each individual file
         const uploadedFile = await strapi
           .plugin("upload")
@@ -95,14 +104,16 @@ async function createEntry({ model, entry, files }) {
           });
 
         // Attach each file to its entry
-        set(entry, key, uploadedFile[0].id);
+        setByPath(entry, key, uploadedFile[0].id);
       }
     }
 
     // Actually create the entry in Strapi
-    const createdEntry = await strapi.documents(`api::${model}.${model}`).create({
-      data: entry,
-    });
+    const createdEntry = await strapi
+      .documents(`api::${model}.${model}`)
+      .create({
+        data: entry,
+      });
   } catch (e) {
     console.log("model", entry, e);
   }
@@ -111,8 +122,8 @@ async function createEntry({ model, entry, files }) {
 async function importCategories() {
   return Promise.all(
     categories.map((category) => {
-      return createEntry({ model: "category", entry: category });
-    })
+      return createEntry({ model: "category", entry: category, files: {} });
+    }),
   );
 }
 
@@ -134,7 +145,7 @@ async function importWriters() {
         entry: writer,
         files,
       });
-    })
+    }),
   );
 }
 
@@ -154,7 +165,7 @@ async function importArticles() {
         },
         files,
       });
-    })
+    }),
   );
 }
 
